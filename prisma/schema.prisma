@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String        @id @default(cuid())
+  email                String        @unique
+  password             String
+  firstName            String?
+  lastName             String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  subscriptionTier     String        @default("free")
+  subscriptionStatus   String        @default("active")
+  stripeCustomerId     String?       @unique
+  trialEndsAt          DateTime?
+  emailNotifications   Boolean       @default(true)
+  inAppNotifications   Boolean       @default(true)
+  errorNotifications   Boolean       @default(true)
+  successNotifications Boolean       @default(false)
+  accounts             Account[]
+  auditLogs            AuditLog[]
+  integrations         Integration[]
+  syncEvents           SyncEvent[]
+
+  @@map("users")
+}
+
+model Account {
+  id                 String        @id @default(cuid())
+  userId             String
+  provider           String
+  providerType       String
+  accessToken        String?
+  refreshToken       String?
+  tokenType          String?
+  scope              String?
+  expiresAt          DateTime?
+  providerAccountId  String
+  accountName        String?
+  accountEmail       String?
+  isActive           Boolean       @default(true)
+  lastSyncAt         DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  crmSchema          Json?
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  crmIntegrations    Integration[] @relation("CrmAccount")
+  retellIntegrations Integration[] @relation("RetellAccount")
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Integration {
+  id                String      @id @default(cuid())
+  userId            String
+  name              String
+  description       String?
+  retellAccountId   String
+  crmAccountId      String
+  retellAgentId     String?
+  crmObject         String?
+  isActive          Boolean     @default(true)
+  isDraft           Boolean     @default(false)
+  currentStep       Int?
+  webhookUrl        String      @unique
+  webhookSecret     String
+  fieldMappings     Json?
+  triggerFilters    Json?
+  callConfiguration Json?
+  businessWorkflows Json?
+  lastSyncAt        DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  integrationType   String?     @default("both")
+  retellAgentName   String?
+  crmAccount        Account     @relation("CrmAccount", fields: [crmAccountId], references: [id])
+  retellAccount     Account     @relation("RetellAccount", fields: [retellAccountId], references: [id])
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  syncEvents        SyncEvent[]
+
+  @@map("integrations")
+}
+
+model SyncEvent {
+  id            String      @id @default(cuid())
+  userId        String
+  integrationId String
+  eventType     String
+  status        String
+  sourceData    Json?
+  mappedData    Json?
+  retellCallId  String?
+  errorMessage  String?
+  retryCount    Int         @default(0)
+  maxRetries    Int         @default(3)
+  processedAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([integrationId, status])
+  @@map("sync_events")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  resource  String?
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@map("audit_logs")
+}
+
+model WebhookEvent {
+  id            String   @id @default(cuid())
+  integrationId String?
+  provider      String
+  eventType     String
+  payload       Json
+  signature     String?
+  processed     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([provider, processed])
+  @@map("webhook_events")
+}
