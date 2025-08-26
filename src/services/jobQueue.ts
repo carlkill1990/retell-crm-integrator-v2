@@ -2,11 +2,18 @@ import { Queue, Worker, Job } from 'bullmq';
 import { logger } from '../config/logger';
 
 // BullMQ connection configuration
-const redisConfig = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-  password: process.env.REDIS_PASSWORD,
+const getRedisConfig = () => {
+  if (process.env.REDIS_URL) {
+    return { url: process.env.REDIS_URL };
+  }
+  return {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379'),
+    password: process.env.REDIS_PASSWORD,
+  };
 };
+
+const redisConfig = getRedisConfig();
 import { webhookProcessor } from './webhookProcessor';
 import { syncService } from './syncService';
 import { emailService } from './emailService';
