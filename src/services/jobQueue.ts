@@ -4,7 +4,12 @@ import { logger } from '../config/logger';
 // BullMQ connection configuration
 const getRedisConfig = () => {
   if (process.env.REDIS_URL) {
-    return { url: process.env.REDIS_URL };
+    const url = new URL(process.env.REDIS_URL);
+    return {
+      host: url.hostname,
+      port: parseInt(url.port) || 6379,
+      password: url.password || undefined,
+    };
   }
   return {
     host: process.env.REDIS_HOST || 'localhost',
