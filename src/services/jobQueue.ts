@@ -1,24 +1,14 @@
 import { Queue, Worker, Job } from 'bullmq';
 import { logger } from '../config/logger';
 
-// BullMQ connection configuration
-const getRedisConfig = () => {
-  if (process.env.REDIS_URL) {
-    const url = new URL(process.env.REDIS_URL);
-    return {
-      host: url.hostname,
-      port: parseInt(url.port) || 6379,
-      password: url.password || undefined,
-    };
-  }
-  return {
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD,
-  };
+// BullMQ connection configuration  
+const redisConfig = {
+  host: process.env.REDIS_HOST || 'coolify-redis',
+  port: parseInt(process.env.REDIS_PORT || '6379'),
+  password: process.env.REDIS_PASSWORD,
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
 };
-
-const redisConfig = getRedisConfig();
 import { webhookProcessor } from './webhookProcessor';
 import { syncService } from './syncService';
 import { emailService } from './emailService';
