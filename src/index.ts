@@ -17,8 +17,8 @@ async function startServer() {
     // Initialize job queue (commented out for now)
     // await initializeJobQueue();
     
-    // Initialize webhook manager
-    await WebhookManager.initialize();
+    // Initialize webhook manager (temporarily disabled)
+    // await WebhookManager.initialize();
     
     // Start server
     const server = app.listen(config.port, '0.0.0.0', () => {
