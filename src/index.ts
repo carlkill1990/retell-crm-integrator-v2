@@ -21,9 +21,9 @@ async function startServer() {
     await WebhookManager.initialize();
     
     // Start server
-    const server = app.listen(config.port, () => {
+    const server = app.listen(config.port, '0.0.0.0', () => {
       logger.info(`🚀 Server running on port ${config.port} in ${config.nodeEnv} mode`);
-      logger.info(`📖 API documentation available at http://localhost:${config.port}/api/docs`);
+      logger.info(`📖 API documentation available at http://0.0.0.0:${config.port}/api/docs`);
     });
 
     // Graceful shutdown
