@@ -96,9 +96,13 @@ export class WebhookManager {
         const url = new URL(integration.webhookUrl);
         this.currentBaseUrl = `${url.protocol}//${url.host}`;
         logger.info(`Initialized webhook manager with base URL: ${this.currentBaseUrl}`);
+      } else {
+        logger.info('No existing integrations found, webhook manager initialized without base URL');
       }
     } catch (error) {
       logger.error('Failed to initialize webhook manager:', error);
+      // Don't crash the app - just continue without webhook manager
+      logger.info('Continuing app startup despite webhook manager error');
     }
   }
 
